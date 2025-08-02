@@ -4,7 +4,7 @@
 
      use Illuminate\Http\Request;
      use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+     use Illuminate\Support\Facades\Log;
 
      class KairoController extends Controller
      {
@@ -12,13 +12,18 @@ use Illuminate\Support\Facades\Log;
          {
              $request->validate([
                  'message' => 'required|string',
-                 'history' => 'array'
+                 'history' => 'array',
+                 'api_token' => 'required|string'
              ]);
+
+             $apiToken = env('KAIRO_API_TOKEN');
+             if ($request->api_token !== $apiToken) {
+                 return response()->json(['response' => 'Token inválido'], 401);
+             }
 
              $message = $request->input('message');
              $history = $request->input('history', []);
 
-             // Adicionar mensagem de sistema
              $messages = [
                  ['role' => 'system', 'content' => 'Você é Kairo IA, um assistente virtual útil e amigável. Responda em português, de forma clara, concisa e com um tom profissional, mas acolhedor.'],
                  ...$history,
@@ -37,6 +42,7 @@ use Illuminate\Support\Facades\Log;
                  ]);
 
                  if ($response->failed()) {
+                     Log::error('Erro na API OpenAI: ' . $response->body());
                      return response()->json(['response' => 'Desculpe, algo deu errado. Tente novamente mais tarde.'], 500);
                  }
 

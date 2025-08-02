@@ -1,0 +1,1 @@
+{"message":"The message field is required. (and 1 more error)","errors":{"message":["The message field is required."],"api_token":["The api token field is required."]}}

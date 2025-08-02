@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConfigController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KairoController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\KairoController;
 
 
 Route::post('/kairo', [KairoController::class, 'handleMessage']);
+Route::get('/config', [ConfigController::class, 'getConfig']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
