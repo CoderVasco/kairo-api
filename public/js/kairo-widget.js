@@ -137,6 +137,8 @@
     // Lógica do Widget
     class KairoWidget {
         constructor() {
+            this.apiToken = document.querySelector('script[data-api-token]')?.getAttribute('data-api-token') || '';
+            console.log('Token inicializado:', this.apiToken);
             this.chatbotToggle = document.getElementById('kairoChatbotToggle');
             this.chatbotContainer = document.getElementById('kairoChatbotContainer');
             this.closeButton = document.getElementById('kairoCloseButton');
@@ -152,7 +154,6 @@
             this.conversationHistory = [];
             this.maxHistoryLength = 10;
             this.apiUrl = '';
-            this.apiToken = '';
             this.avatarUrl = '';
 
             this.loadConfig().then(() => {
@@ -164,21 +165,22 @@
 
         async loadConfig() {
             try {
-                const response = await fetch('http://127.0.0.1:8016/api/config', {
+                if (!this.apiToken) throw new Error('Token da API não encontrado no atributo data-api-token');
+                const response = await fetch(`http://127.0.0.1:8016/api/config?api_token=${encodeURIComponent(this.apiToken)}`, {
                     method: 'GET',
                     headers: { 'Accept': 'application/json' }
                 });
-                if (!response.ok) throw new Error('Falha ao carregar configurações');
+                if (!response.ok) {
+                    console.error('Resposta do servidor:', await response.text());
+                    throw new Error(`Falha ao carregar configurações: ${response.status}`);
+                }
                 const config = await response.json();
                 this.apiUrl = config.api_endpoint;
-                this.apiToken = config.api_token;
                 this.avatarUrl = config.avatar_url;
                 this.avatarImage.src = this.avatarUrl;
             } catch (error) {
                 console.error('Erro ao carregar configurações:', error);
-                // Fallback para valores padrão
                 this.apiUrl = 'http://127.0.0.1:8016/api/kairo';
-                this.apiToken = '';
                 this.avatarUrl = 'http://127.0.0.1:8016/images/kairo.jpg';
                 this.avatarImage.src = this.avatarUrl;
                 this.displayMessage('Erro ao carregar configurações. Funcionalidade pode estar limitada.', 'assistant');
@@ -263,7 +265,7 @@
                 this.displayMessage(response, 'assistant');
                 this.conversationHistory.push({ role: 'assistant', content: response });
             } catch (error) {
-                console.error('Erro ao chamar a API:', error);
+                console.error('Erro ao processar mensagem:', error);
                 this.displayMessage('Desculpe, algo deu errado. Tente novamente mais tarde.', 'assistant');
                 this.conversationHistory.push({ role: 'assistant', content: 'Desculpe, algo deu errado. Tente novamente mais tarde.' });
             } finally {
@@ -274,25 +276,31 @@
 
         async callKairoApi(message) {
             const limitedHistory = this.conversationHistory.slice(-this.maxHistoryLength);
-            const response = await fetch(this.apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: message,
-                    history: limitedHistory,
-                    api_token: this.apiToken
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Erro HTTP: ${response.status}`);
+            const payload = {
+                message: message,
+                history: limitedHistory,
+                api_token: this.apiToken
+            };
+            console.log('Enviando para /api/kairo:', payload);
+            try {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                console.log('Resposta do servidor:', data);
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status} - ${data.message || 'Erro desconhecido'}`);
+                }
+                return data.response;
+            } catch (error) {
+                console.error('Erro ao chamar a API:', error);
+                throw error;
             }
-
-            const data = await response.json();
-            return data.response;
         }
 
         displayMessage(message, sender) {

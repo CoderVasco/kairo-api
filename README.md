@@ -1,52 +1,63 @@
 📚 Documentação da API do Kairo IA
 Bem-vindo à documentação da API do Kairo IA! Este guia explica como configurar e integrar o chatbot Kairo IA, um assistente virtual alimentado pela API da OpenAI, em seu site. A API processa mensagens do usuário e retorna respostas inteligentes, enquanto o widget oferece uma interface de chat moderna e responsiva.
-URL Base: https://kairo.teconectapi.it.ao/api
-Widget: Hospedado em https://kairo.teconectapi.it.ao/js/kairo-widget.js
-Site de Integração: https://tecnideia.ao
+URL Base (Local): http://127.0.0.1:8016/api
+Widget (Local): http://127.0.0.1:8016/js/kairo-widget.js
+Site de Integração: http://127.0.0.1:8017 (futuramente https://tecnideia.ao)
 
 🚀 Visão Geral
-O Kairo IA é um chatbot desenvolvido em Laravel que utiliza o modelo gpt-3.5-turbo da OpenAI para responder perguntas de forma clara e amigável. O widget JavaScript, integrado via um único <script>, proporciona uma experiência de chat interativa com histórico persistente e design adaptável.
+O Kairo IA é um chatbot desenvolvido em Laravel que utiliza o modelo gpt-3.5-turbo da OpenAI para responder perguntas de forma clara e amigável. O widget JavaScript, integrado via um único <script>, proporciona uma experiência de chat interativa com histórico persistente e design adaptável. As interfaces de autenticação e gerenciamento de tokens são simples, usando apenas HTML e CSS puro.
 Características
 
 Respostas Inteligentes: Geradas pela API da OpenAI com tom profissional e acolhedor.
 Histórico de Conversa: Armazenado no localStorage (limite de 10 mensagens).
 Interface Responsiva: Compatível com desktops e dispositivos móveis.
-Segurança: Autenticação obrigatória via token e configurações de CORS.
-Configuração Dinâmica: URLs e tokens obtidos via endpoint /api/config.
+Segurança: Autenticação obrigatória via token associado a usuários registrados.
+Configuração Dinâmica: URLs obtidas via endpoint /api/config.
 
 
 🛠️ Configuração da API
-A API é construída em Laravel e hospedada em https://kairo.teconectapi.it.ao. Abaixo estão os passos para configurá-la.
+A API é construída em Laravel e hospedada localmente em http://127.0.0.1:8016. Abaixo estão os passos para configurá-la.
 Pré-requisitos
 
 Laravel: Versão 8.x ou superior.
 PHP: 7.4 ou superior.
 Guzzle: Para chamadas HTTP (composer require guzzlehttp/guzzle).
 Chave da OpenAI: Obtenha em https://platform.openai.com.
+Laravel Breeze: Para autenticação (composer require laravel/breeze --dev).
 
 Configuração do Ambiente
-Edite o arquivo .env do projeto Laravel:
+Edite o arquivo .env:
 APP_NAME="Kairo API"
-APP_ENV=production
+APP_ENV=local
 APP_KEY=base64:SUA_CHAVE_GERADA
-APP_DEBUG=false
-APP_URL=https://kairo.teconectapi.it.ao
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8016
 OPENAI_API_KEY=sua-chave-openai-aqui
-KAIRO_API_TOKEN=seu-token-secreto
-KAIRO_API_ENDPOINT=https://kairo.teconectapi.it.ao/api/kairo
-KAIRO_AVATAR_URL=https://kairo.teconectapi.it.ao/images/kairo.jpg
+KAIRO_API_ENDPOINT=http://127.0.0.1:8016/api/kairo
+KAIRO_AVATAR_URL=http://127.0.0.1:8016/images/kairo.jpg
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=kairo_api
+DB_USERNAME=root
+DB_PASSWORD=
 
 
-Gere a chave da aplicação (se necessário):php artisan key:generate
+Gere a chave da aplicação:
+php artisan key:generate
+
+
+Configure o banco de dados e execute as migrations:
+php artisan migrate
 
 
 
 Configuração de CORS
-Permita requisições de https://tecnideia.ao em config/cors.php:
+Permita requisições de http://127.0.0.1:8017 em config/cors.php:
 return [
     'paths' => ['api/*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['https://tecnideia.ao'],
+    'allowed_origins' => ['http://127.0.0.1:8017'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
@@ -55,59 +66,26 @@ return [
 ];
 
 Configuração do Servidor
-Hospede a API com um servidor web (ex.: Nginx) e HTTPS.
-Exemplo de Configuração para Nginx:
-server {
-    listen 443 ssl;
-    server_name kairo.teconectapi.it.ao;
-    root /caminho/para/kairo-api/public;
+Hospede a API localmente com:
+php artisan serve --port=8016
 
-    ssl_certificate /caminho/para/certificado.crt;
-    ssl_certificate_key /caminho/para/chave.key;
+Configuração das Views
+Certifique-se de que as views estão no diretório correto:
 
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
+resources/views/auth/login.blade.php
+resources/views/auth/register.blade.php
+resources/views/dashboard.blade.php
+resources/views/api-token.blade.php
 
-    index index.php;
-
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock; # Ajuste para sua versão do PHP
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~* \.(js|jpg|png|css)$ {
-        expires 30d;
-        access_log off;
-    }
-
-    location ~ /\.ht {
-        deny all;
-    }
-}
-
-Configurar HTTPS:
-
-Use Let's Encrypt:sudo certbot --nginx -d kairo.teconectapi.it.ao
-
-
-
+Nota: Se a view api-token.blade.php não for encontrada, verifique se ela está em resources/views/api-token.blade.php e não em um subdiretório como resources/views/auth/. Caso esteja em um subdiretório, atualize o ApiTokenController para usar view('auth.api-token').
 
 🌐 Endpoints da API
-GET /config
-Retorna as configurações públicas do chatbot, como URL da API, URL do avatar e token.
+GET /api/config?api_token={token}
+Retorna as configurações públicas do chatbot para um token válido.
 Parâmetros de Requisição
 
 Método: GET
-URL: https://kairo.teconectapi.it.ao/api/config
+URL: http://127.0.0.1:8016/api/config?api_token={seu-token}
 Cabeçalhos:
 Accept: application/json
 
@@ -119,31 +97,29 @@ Código de Status: 200 OK
 Corpo da Resposta:
 api_endpoint: URL do endpoint /kairo.
 avatar_url: URL da imagem do avatar.
-api_token: Token de autenticação.
 
 
 
 Exemplo de Resposta:
 {
-    "api_endpoint": "https://kairo.teconectapi.it.ao/api/kairo",
-    "avatar_url": "https://kairo.teconectapi.it.ao/images/kairo.jpg",
-    "api_token": "seu-token-secreto"
+    "api_endpoint": "http://127.0.0.1:8016/api/kairo",
+    "avatar_url": "http://127.0.0.1:8016/images/kairo.jpg"
 }
 
 Erros
 
-500 Internal Server Error: Falha ao carregar configurações.{
-    "message": "Erro interno do servidor"
+401 Unauthorized: Token inválido.{
+    "message": "Token inválido"
 }
 
 
 
-POST /kairo
+POST /api/kairo
 Processa uma mensagem do usuário e retorna uma resposta do Kairo IA.
 Parâmetros de Requisição
 
 Método: POST
-URL: https://kairo.teconectapi.it.ao/api/kairo
+URL: http://127.0.0.1:8016/api/kairo
 Cabeçalhos:
 Content-Type: application/json
 Accept: application/json
@@ -152,7 +128,7 @@ Accept: application/json
 Corpo da Requisição:
 message (string, obrigatório): Mensagem do usuário.
 history (array, opcional): Histórico da conversa (máximo de 10 mensagens).
-api_token (string, obrigatório): Token de autenticação.
+api_token (string, obrigatório): Token de autenticação do usuário.
 
 
 
@@ -163,7 +139,7 @@ Exemplo de Requisição:
         {"role": "user", "content": "Oi, tudo bem?"},
         {"role": "assistant", "content": "Tudo ótimo por aqui! E contigo?"}
     ],
-    "api_token": "seu-token-secreto"
+    "api_token": "seu-token-unico"
 }
 
 Resposta
@@ -198,8 +174,34 @@ Erros
 
 
 
+🤝 Registro e Geração de Token
+Para usar a API, os usuários devem se inscrever e gerar um token único.
+Passos para Registro
+
+Acesse http://127.0.0.1:8016/register.
+Preencha o formulário com nome, e-mail e senha.
+Após o registro, você será redirecionado para http://127.0.0.1:8016/api-token, onde o token da API será exibido.
+Para usuários existentes, faça login em http://127.0.0.1:8016/login e acesse http://127.0.0.1:8016/api-token para visualizar ou regenerar o token.
+
+Interface de Autenticação
+
+Login: Interface simples com campos para e-mail e senha, opção "Lembrar-me" e link para recuperação de senha.
+Registro: Formulário com campos para nome, e-mail, senha e confirmação de senha.
+Estilo: Usa HTML e CSS puro, com cores consistentes (#2563eb para azul, #64748b para cinza) e design responsivo.
+
+Painel de Tokens
+
+URL: http://127.0.0.1:8016/api-token
+Funcionalidades:
+Exibir o token atual.
+Gerar ou regenerar um novo token.
+
+
+Nota: O token é gerado automaticamente no registro e armazenado no banco de dados. Verifique se api-token.blade.php está em resources/views/.
+
+
 🤖 Integração do Widget
-O widget Kairo IA é um arquivo JavaScript hospedado em https://kairo.teconectapi.it.ao/js/kairo-widget.js. Ele se comunica com o endpoint /api/config para obter configurações dinâmicas.
+O widget Kairo IA é hospedado em http://127.0.0.1:8016/js/kairo-widget.js e requer um api_token para funcionar.
 Passos para Integração
 
 Hospedar Arquivos:
@@ -210,23 +212,23 @@ Imagem do Avatar: Hospede kairo.jpg em public/images/kairo.jpg.
 
 Adicionar o Script:
 
-No site https://tecnideia.ao, adicione o script no final do <body>:
-<script src="https://kairo.teconectapi.it.ao/js/kairo-widget.js" async></script>
+No site (ex.: http://127.0.0.1:8017), adicione o script com o atributo data-api-token:
+<script src="http://127.0.0.1:8016/js/kairo-widget.js" data-api-token="seu-token-unico" async></script>
 
 
 
 
 Funcionalidades do Widget:
 
-Obtém configurações dinamicamente via /api/config.
+Obtém configurações via /api/config?api_token={token}.
 Persiste o histórico no localStorage (limite de 10 mensagens).
 Inclui animações, responsividade e indicador de digitação.
-Usa fallback para configurações padrão em caso de falha no /api/config.
+Exibe mensagem de erro se o api_token não for fornecido.
 
 
 
-Exemplo de Integração em Laravel
-Edite a view principal (ex.: resources/views/layouts/app.blade.php):
+Exemplo de Integração
+Adicione ao HTML do site (ex.: index.html em http://127.0.0.1:8017):
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -242,68 +244,84 @@ Edite a view principal (ex.: resources/views/layouts/app.blade.php):
 <body>
     <h1>Bem-vindo à Tecnideia</h1>
     <p>Converse com o Kairo IA clicando no ícone no canto inferior direito!</p>
-    <script src="https://kairo.teconectapi.it.ao/js/kairo-widget.js" async></script>
+    <script src="http://127.0.0.1:8016/js/kairo-widget.js" data-api-token="seu-token-unico" async></script>
 </body>
 </html>
 
 
 🧪 Testes
+Testar Registro e Login
+
+Registro:
+Acesse http://127.0.0.1:8016/register.
+Preencha o formulário e envie.
+Verifique o redirecionamento para http://127.0.0.1:8016/api-token e a exibição do token.
+
+
+Login:
+Acesse http://127.0.0.1:8016/login.
+Faça login e confirme o redirecionamento para http://127.0.0.1:8016/api-token.
+
+
+
 Testar a API
 
-Endpoint /config:
-curl -X GET https://kairo.teconectapi.it.ao/api/config \
--H "Accept: application/json"
+Endpoint /api/config:
+curl -X GET "http://127.0.0.1:8016/api/config?api_token=seu-token-unico"
 
 Esperado:
 {
-    "api_endpoint": "https://kairo.teconectapi.it.ao/api/kairo",
-    "avatar_url": "https://kairo.teconectapi.it.ao/images/kairo.jpg",
-    "api_token": "seu-token-secreto"
+    "api_endpoint": "http://127.0.0.1:8016/api/kairo",
+    "avatar_url": "http://127.0.0.1:8016/images/kairo.jpg"
 }
 
 
-Endpoint /kairo:
-curl -X POST https://kairo.teconectapi.it.ao/api/kairo \
+Endpoint /api/kairo:
+curl -X POST http://127.0.0.1:8016/api/kairo \
 -H "Content-Type: application/json" \
 -H "Accept: application/json" \
--d '{"message":"Teste","history":[],"api_token":"seu-token-secreto"}'
+-d '{"message":"Teste","history":[],"api_token":"seu-token-unico"}'
 
 Esperado: Resposta com mensagem do OpenAI.
 
 
 Testar o Widget
 
-Acesse https://tecnideia.ao.
-Verifique o ícone do chatbot no canto inferior direito.
+Acesse http://127.0.0.1:8017.
+Verifique o ícone do chatbot.
 Envie uma mensagem e confirme a resposta.
-Teste o histórico da conversa e a responsividade.
+Teste o histórico e a responsividade.
 
 Debugging
 
 Navegador: Use o console (F12) para erros de JavaScript ou CORS.
 Laravel: Consulte storage/logs/laravel.log para erros da API.
+Erro de View: Se a view api-token não for encontrada, verifique o diretório resources/views/ e limpe o cache com:php artisan view:clear
+php artisan cache:clear
+
+
 
 
 🔒 Segurança
 
 Chave da OpenAI: Armazenada no .env, nunca exposta no frontend.
-Autenticação: O api_token é obrigatório no endpoint /kairo.
-Rate Limiting: Adicione o middleware throttle:Route::post('/kairo', [KairoController::class, 'handleMessage'])->middleware('throttle:60,1');
+Autenticação: O api_token é obrigatório e validado contra a tabela users.
+Rate Limiting: Aplicado no endpoint /kairo:Route::post('/kairo', [KairoController::class, 'handleMessage'])->middleware('throttle:60,1');
 
 
 
 
 ⚡ Otimização
 
-Minificação:
+Minificação do Widget:
 npm install -g uglify-js
 uglifyjs public/js/kairo-widget.js -o public/js/kairo-widget.min.js
 
 Atualize o script:
-<script src="https://kairo.teconectapi.it.ao/js/kairo-widget.min.js" async></script>
+<script src="http://127.0.0.1:8016/js/kairo-widget.min.js" data-api-token="seu-token-unico" async></script>
 
 
-Cache: Configure cache para arquivos estáticos no Nginx (expiração de 30 dias).
+Cache: Configure cache para arquivos estáticos no servidor.
 
 
 
@@ -311,4 +329,4 @@ Cache: Configure cache para arquivos estáticos no Nginx (expiração de 30 dias
 
 Imagem do Avatar: Certifique-se de que kairo.jpg está em public/images/kairo.jpg.
 Manutenção: Monitore os logs do Laravel e a performance da API.
-Suporte: Contate a equipe de desenvolvimento para dúvidas.
+Produção: Atualize o .env para https://kairo.teconectapi.it.ao quando implantar.

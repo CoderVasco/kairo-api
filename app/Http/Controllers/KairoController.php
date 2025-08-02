@@ -1,55 +1,75 @@
 <?php
 
-     namespace App\Http\Controllers;
+namespace App\Http\Controllers;
 
-     use Illuminate\Http\Request;
-     use Illuminate\Support\Facades\Http;
-     use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
-     class KairoController extends Controller
-     {
-         public function handleMessage(Request $request)
-         {
-             $request->validate([
-                 'message' => 'required|string',
-                 'history' => 'array',
-                 'api_token' => 'required|string'
-             ]);
+class KairoController extends Controller
+{
+    public function config(Request $request)
+    {
+        $token = $request->query('api_token');
+        $user = User::where('api_token', $token)->first();
 
-             $apiToken = env('KAIRO_API_TOKEN');
-             if ($request->api_token !== $apiToken) {
-                 return response()->json(['response' => 'Token inválido'], 401);
-             }
+        if (!$user) {
+            return response()->json(['message' => 'Token inválido'], 401);
+        }
 
-             $message = $request->input('message');
-             $history = $request->input('history', []);
+        return response()->json([
+            'api_endpoint' => config('app.kairo_api_endpoint', 'http://127.0.0.1:8016/api/kairo'),
+            'avatar_url' => config('app.kairo_avatar_url', 'http://127.0.0.1:8016/images/kairo.jpg'),
+        ]);
+    }
 
-             $messages = [
-                 ['role' => 'system', 'content' => 'Você é Kairo IA, um assistente virtual útil e amigável. Responda em português, de forma clara, concisa e com um tom profissional, mas acolhedor.'],
-                 ...$history,
-                 ['role' => 'user', 'content' => $message]
-             ];
+    public function handleMessage(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'message' => 'required|string',
+            'api_token' => 'required|string',
+        ]);
 
-             try {
-                 $response = Http::withHeaders([
-                     'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-                     'Content-Type' => 'application/json'
-                 ])->post('https://api.openai.com/v1/chat/completions', [
-                     'model' => 'gpt-3.5-turbo',
-                     'messages' => $messages,
-                     'max_tokens' => 500,
-                     'temperature' => 0.7
-                 ]);
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 400);
+        }
 
-                 if ($response->failed()) {
-                     Log::error('Erro na API OpenAI: ' . $response->body());
-                     return response()->json(['response' => 'Desculpe, algo deu errado. Tente novamente mais tarde.'], 500);
-                 }
+        $user = User::where('api_token', $request->api_token)->first();
 
-                 return response()->json(['response' => $response->json()['choices'][0]['message']['content']]);
-             } catch (\Exception $e) {
-                 Log::error('Erro na API OpenAI: ' . $e->getMessage());
-                 return response()->json(['response' => 'Desculpe, algo deu errado. Tente novamente mais tarde.'], 500);
-             }
-         }
-     }
+        if (!$user) {
+            return response()->json(['response' => 'Token inválido'], 401);
+        }
+
+        $messages = [
+            ['role' => 'system', 'content' => 'Você é Kairo IA, um assistente amigável da Tecnideia. Responda em português com clareza e precisão.'],
+        ];
+
+        if (!empty($request->history)) {
+            $messages = array_merge($messages, array_slice($request->history, -10));
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $request->message];
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                'Content-Type' => 'application/json',
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-3.5-turbo',
+                'messages' => $messages,
+            ]);
+
+            if ($response->successful()) {
+                $content = $response->json()['choices'][0]['message']['content'];
+                return response()->json(['response' => $content]);
+            }
+
+            return response()->json(['response' => 'Desculpe, algo deu errado. Tente novamente mais tarde.'], 500);
+        } catch (\Exception $e) {
+            Log::error('Erro ao chamar a API da OpenAI: ' . $e->getMessage());
+            return response()->json(['response' => 'Desculpe, algo deu errado. Tente novamente mais tarde.'], 500);
+        }
+    }
+}
