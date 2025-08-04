@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\FaqController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,4 +51,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/api-token/generate', [ApiTokenController::class, 'generateToken'])->name('api-token.generate');
 });
 
-require __DIR__.'/auth.php';
+//salvar configurações
+Route::post('/config/save', [ConfigController::class, 'saveConfig'])->middleware('auth');
+
+// FAQ Management
+Route::middleware('auth')->group(function () {
+    Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
+    Route::get('/faqs/create', [FaqController::class, 'create'])->name('faqs.create');
+    Route::post('/faqs', [FaqController::class, 'store'])->name('faqs.store');
+    Route::get('/faqs/{faq}/edit', [FaqController::class, 'edit'])->name('faqs.edit');
+    Route::put('/faqs/{faq}', [FaqController::class, 'update'])->name('faqs.update');
+    Route::delete('/faqs/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+});
+
+require __DIR__ . '/auth.php';

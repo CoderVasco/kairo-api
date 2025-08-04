@@ -1,9 +1,7 @@
 (function () {
-    // Evitar múltiplas inicializações
     if (window.KairoWidget) return;
     window.KairoWidget = true;
 
-    // CSS Minificado
     const styles = `
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --primary-color: #2563eb; --secondary-color: #0ea5e9; --accent-color: #06b6d4; --dark-color: #1e293b; --light-color: #f8fafc; --text-primary: #0f172a; --text-secondary: #64748b; --bg-primary: #ffffff; --bg-secondary: #f8fafc; --border-color: #e2e8f0; --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); --gradient-primary: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%); }
@@ -27,13 +25,18 @@
         .kairo-close-button { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.2); border: none; width: 25px; height: 25px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
         .kairo-close-button:hover { background: rgba(255, 255, 255, 0.4); transform: rotate(90deg); }
         .kairo-chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: var(--bg-primary); }
-        .kairo-message { margin-bottom: 10px; animation: kairo-slideIn 0.4s ease-out; }
+        .kairo-message { margin-bottom: 10px; animation: kairo-slideIn 0.4s ease-out; display: flex; }
         @keyframes kairo-slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .kairo-message.user { text-align: right; }
-        .kairo-message.bot { text-align: left; }
+        .kairo-message.kairo-user-message { justify-content: flex-end; }
+        .kairo-message.kairo-bot-message { justify-content: flex-start; }
         .kairo-message-bubble { display: inline-block; max-width: 85%; padding: 10px 12px; border-radius: 15px; font-size: 13px; line-height: 1.4; position: relative; color: var(--text-primary); }
-        .kairo-message.user .kairo-message-bubble { background: var(--gradient-primary); color: var(--light-color); border-bottom-right-radius: 5px; }
-        .kairo-message.bot .kairo-message-bubble { background: var(--light-color); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: var(--shadow); border-bottom-left-radius: 5px; }
+        .kairo-message.kairo-user-message .kairo-message-bubble { background: var(--gradient-primary); color: var(--light-color); border-bottom-right-radius: 5px; }
+        .kairo-message.kairo-bot-message .kairo-message-bubble { background: var(--light-color); color: var(--text-primary); border: 1px solid var(--border-color); box-shadow: var(--shadow); border-bottom-left-radius: 5px; }
+        .kairo-message-indicator { font-weight: bold; margin-right: 5px; }
+        .kairo-message.kairo-user-message .kairo-message-indicator { color: var(--light-color); }
+        .kairo-message.kairo-bot-message .kairo-message-indicator { color: var(--primary-color); }
+        .kairo-message-bubble a { color: var(--primary-color); text-decoration: underline; }
+        .kairo-message-bubble a:hover { color: var(--secondary-color); }
         .kairo-chat-input-container { padding: 15px; background: var(--bg-secondary); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
         .kairo-chat-input-form { display: flex; gap: 10px; align-items: flex-end; }
         .kairo-chat-input { flex: 1; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 20px; font-size: 13px; outline: none; transition: all 0.3s ease; resize: none; min-height: 40px; max-height: 80px; font-family: inherit; background: var(--bg-primary); color: var(--text-primary); }
@@ -72,7 +75,6 @@
         }
     `;
 
-    // HTML do Widget
     const widgetHtml = `
         <div class="kairo-chatbot-widget">
             <button class="kairo-chatbot-toggle intro-animation" id="kairoChatbotToggle">
@@ -124,17 +126,14 @@
         </div>
     `;
 
-    // Injetar Estilos
     const styleElement = document.createElement('style');
     styleElement.textContent = styles;
     document.head.appendChild(styleElement);
 
-    // Injetar HTML
     const widgetContainer = document.createElement('div');
     widgetContainer.innerHTML = widgetHtml;
     document.body.appendChild(widgetContainer);
 
-    // Lógica do Widget
     class KairoWidget {
         constructor() {
             this.apiToken = document.querySelector('script[data-api-token]')?.getAttribute('data-api-token') || '';
@@ -165,25 +164,26 @@
 
         async loadConfig() {
             try {
-                if (!this.apiToken) throw new Error('Token da API não encontrado no atributo data-api-token');
-                const response = await fetch(`http://127.0.0.1:8016/api/config?api_token=${encodeURIComponent(this.apiToken)}`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!response.ok) {
-                    console.error('Resposta do servidor:', await response.text());
-                    throw new Error(`Falha ao carregar configurações: ${response.status}`);
-                }
+                if (!this.apiToken) throw new Error('Token da API não encontrado');
+                const response = await fetch(`http://127.0.0.1:8016/api/config?api_token=${encodeURIComponent(this.apiToken)}`);
+                if (!response.ok) throw new Error(`Falha ao carregar configurações: ${response.status}`);
                 const config = await response.json();
                 this.apiUrl = config.api_endpoint;
                 this.avatarUrl = config.avatar_url;
+                this.botName = config.bot_name || 'Kairo IA';
+                this.primaryColor = config.primary_color || '#2563eb';
+                this.secondaryColor = config.secondary_color || '#0ea5e9';
+                this.welcomeMessage = config.welcome_message || 'Bem-vindo ao Kairo IA! Como posso ajudar?';
+
+                document.querySelector('.kairo-bot-info h2').textContent = this.botName;
                 this.avatarImage.src = this.avatarUrl;
+
+                document.documentElement.style.setProperty('--primary-color', this.primaryColor);
+                document.documentElement.style.setProperty('--secondary-color', this.secondaryColor);
+                document.documentElement.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${this.primaryColor} 0%, ${this.secondaryColor} 100%)`);
             } catch (error) {
                 console.error('Erro ao carregar configurações:', error);
-                this.apiUrl = 'http://127.0.0.1:8016/api/kairo';
-                this.avatarUrl = 'http://127.0.0.1:8016/images/kairo.jpg';
-                this.avatarImage.src = this.avatarUrl;
-                this.displayMessage('Erro ao carregar configurações. Funcionalidade pode estar limitada.', 'assistant');
+                this.displayMessage('Erro ao carregar configurações.', 'assistant');
             }
         }
 
@@ -305,13 +305,61 @@
 
         displayMessage(message, sender) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `kairo-message ${sender}`;
+            messageDiv.className = `kairo-message kairo-${sender}-message`;
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'kairo-message-bubble';
-            bubbleDiv.textContent = message;
+
+            // Adicionar avatar
+            const avatar = document.createElement('img');
+            avatar.className = 'kairo-message-avatar';
+            avatar.src = sender === 'user' ? '/images/user-avatar.png' : this.avatarUrl;
+            avatar.style.width = '30px';
+            avatar.style.height = '30px';
+            avatar.style.borderRadius = '50%';
+            avatar.style.margin = sender === 'user' ? '0 0 0 10px' : '0 10px 0 0';
+            messageDiv.appendChild(avatar);
+
+            // Adicionar indicador
+            const indicator = document.createElement('span');
+            indicator.className = 'kairo-message-indicator';
+            indicator.textContent = sender === 'user' ? 'Você: ' : 'Kairo IA: ';
+            bubbleDiv.appendChild(indicator);
+
+            // Adicionar mensagem
+            const contentSpan = document.createElement('span');
+            contentSpan.innerHTML = this.sanitizeHTML(message);
+            bubbleDiv.appendChild(contentSpan);
+
             messageDiv.appendChild(bubbleDiv);
             this.messagesContainer.appendChild(messageDiv);
             this.scrollToBottom();
+        }
+
+        sanitizeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            const allowedTags = ['a', 'b', 'i', 'strong', 'em'];
+            const allowedAttributes = ['href', 'target'];
+            const temp = document.createElement('div');
+            temp.innerHTML = str;
+            const nodes = temp.childNodes;
+            let sanitized = '';
+
+            nodes.forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    sanitized += node.textContent;
+                } else if (node.nodeType === Node.ELEMENT_NODE && allowedTags.includes(node.tagName.toLowerCase())) {
+                    let attrs = '';
+                    for (const attr of node.attributes) {
+                        if (allowedAttributes.includes(attr.name)) {
+                            attrs += ` ${attr.name}="${attr.value}"`;
+                        }
+                    }
+                    sanitized += `<${node.tagName.toLowerCase()}${attrs}>${node.innerHTML}</${node.tagName.toLowerCase()}>`;
+                }
+            });
+
+            return sanitized;
         }
 
         saveMessages() {
@@ -333,7 +381,6 @@
         }
     }
 
-    // Inicializar o Widget
     document.addEventListener('DOMContentLoaded', () => {
         new KairoWidget();
     });
