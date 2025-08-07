@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-PT">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Gerenciar FAQs</title>
     <style>
         * {
@@ -30,10 +34,23 @@
 
         .alert {
             padding: 15px;
-            background-color: #34d399;
-            color: #fff;
             border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #34d399;
+            color: #fff;
+        }
+
+        .alert-error {
+            background-color: #ef4444;
+            color: #fff;
+        }
+
+        .alert-loading {
+            background-color: #f59e0b;
+            color: #fff;
         }
 
         .table {
@@ -74,12 +91,12 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: none;
         }
 
         .btn-primary {
             background-color: #2563eb;
             color: #fff;
-            border: none;
         }
 
         .btn-primary:hover {
@@ -89,7 +106,6 @@
         .btn-warning {
             background-color: #f59e0b;
             color: #fff;
-            border: none;
         }
 
         .btn-warning:hover {
@@ -99,11 +115,38 @@
         .btn-danger {
             background-color: #ef4444;
             color: #fff;
-            border: none;
         }
 
         .btn-danger:hover {
             background-color: #b91c1c;
+        }
+
+        .btn-scrape {
+            background-color: #10b981;
+            color: #fff;
+        }
+
+        .btn-scrape:hover {
+            background-color: #059669;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            background-color: #2563eb;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .pagination a:hover {
+            background-color: #1e40af;
         }
 
         @media (max-width: 768px) {
@@ -124,47 +167,85 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Minhas FAQs</h1>
-        <a href="{{ route('faqs.create') }}" class="btn btn-primary">Adicionar FAQ</a>
+        <div style="margin-bottom: 20px;">
+            <a href="{{ route('faqs.create') }}" class="btn btn-primary" aria-label="Adicionar nova FAQ">Adicionar FAQ</a>
+            <button class="btn btn-scrape" onclick="runScrape()" aria-label="Executar scraping do site Tecnideia">Executar Scraping</button>
+        </div>
+        <div id="scrape-output" class="alert alert-loading" style="display: none;"></div>
         @if (session('success'))
-            <div class="alert">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
         @endif
         @if ($errors->any())
-            <div class="alert" style="background-color: #ef4444;">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="alert alert-error">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
         @endif
         <table class="table">
             <thead>
                 <tr>
-                    <th>Pergunta</th>
-                    <th>Resposta</th>
-                    <th>Ações</th>
+                    <th scope="col">Pergunta</th>
+                    <th scope="col">Resposta</th>
+                    <th scope="col">Ações</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($faqs as $faq)
-                    <tr>
-                        <td>{{ $faq->question }}</td>
-                        <td>{{ Str::limit($faq->answer, 50) }}</td>
-                        <td>
-                            <a href="{{ route('faqs.edit', $faq) }}" class="btn btn-warning">Editar</a>
-                            <form action="{{ route('faqs.destroy', $faq) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza?')">Excluir</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
+                @forelse ($faqs as $faq)
+                <tr>
+                    <td>{{ e($faq->question) }}</td>
+                    <td>{{ e(Str::limit($faq->answer, 50)) }}</td>
+                    <td>
+                        <a href="{{ route('faqs.edit', $faq) }}" class="btn btn-warning" aria-label="Editar FAQ {{ $faq->question }}">Editar</a>
+                        <form action="{{ route('faqs.destroy', $faq) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta FAQ?')" aria-label="Excluir FAQ {{ $faq->question }}">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="3">Nenhuma FAQ encontrada.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
+
+<script>
+    async function runScrape() {
+        const output = document.getElementById('scrape-output');
+        output.style.display = 'block';
+        output.className = 'alert alert-loading';
+        output.innerText = 'Executando scraping...';
+
+        try {
+            const response = await fetch("/scrape-tecnideia", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Authorization': `Bearer {{ env('SCRAPE_API_TOKEN') }}`,  // Adicionando o header de autorização
+                },
+            });
+
+            const data = await response.json();
+            output.className = 'alert alert-success';
+            output.innerText = data.message + '\n' + data.output;
+        } catch (error) {
+            output.className = 'alert alert-error';
+            output.innerText = 'Erro ao executar scraping: ' + error.message;
+        }
+    }
+</script>
+
 </body>
+
 </html>

@@ -36,7 +36,6 @@ class ConfigController extends Controller
         $user->welcome_message = $request->input('welcome_message');
         $user->avatar_url = $request->input('avatar_url');
         $user->save();
-
         return redirect()->back()->with('success', 'Configurações salvas com sucesso!');
     }
 }

@@ -52,6 +52,9 @@
         .kairo-typing-dots span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes kairo-typing { 0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
         .kairo-welcome-message { text-align: center; color: var(--text-secondary); font-style: italic; margin-bottom: 15px; padding: 10px; background: rgba(37, 99, 235, 0.1); border-radius: 10px; border-left: 3px solid var(--primary-color); }
+        .kairo-name-prompt { padding: 10px; background: var(--light-color); border-radius: 15px; margin-bottom: 10px; border: 1px solid var(--border-color); box-shadow: var(--shadow); max-width: 85%; border-bottom-left-radius: 5px; }
+        .kairo-name-input { width: 100%; padding: 8px; margin-top: 5px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 13px; outline: none; }
+        .kairo-name-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
         @media (max-width: 480px) {
             .kairo-chatbot-widget { bottom: 10px; right: 10px; }
             .kairo-chatbot-toggle { width: 45px; height: 45px; }
@@ -72,6 +75,8 @@
             .kairo-typing-indicator { padding: 8px 10px; border-radius: 12px; }
             .kairo-typing-dots span { width: 6px; height: 6px; }
             .kairo-welcome-message { font-size: 12px; padding: 8px; margin-bottom: 12px; }
+            .kairo-name-prompt { padding: 8px; }
+            .kairo-name-input { font-size: 12px; }
         }
     `;
 
@@ -102,7 +107,7 @@
                     </button>
                 </div>
                 <div class="kairo-chat-messages" id="kairoChatMessages">
-                    <div class="kairo-welcome-message">Bem-vindo ao Kairo IA! Estou aqui para responder suas perguntas com inteligência e estilo. Como posso ajudar?</div>
+                    <div class="kairo-welcome-message">Bem-vindo ao Kairo IA! Estou aqui para responder às tuas perguntas com inteligência e estilo. Como te chamas?</div>
                 </div>
                 <div class="kairo-typing-indicator" id="kairoTypingIndicator">
                     <div class="kairo-typing-dots">
@@ -113,7 +118,7 @@
                 </div>
                 <div class="kairo-chat-input-container">
                     <form class="kairo-chat-input-form">
-                        <textarea class="kairo-chat-input" id="kairoChatInput" placeholder="Digite sua mensagem..." rows="1"></textarea>
+                        <textarea class="kairo-chat-input" id="kairoChatInput" placeholder="Digite a tua mensagem..." rows="1"></textarea>
                         <button type="submit" class="kairo-send-button">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -154,6 +159,8 @@
             this.maxHistoryLength = 10;
             this.apiUrl = '';
             this.avatarUrl = '';
+            this.userName = localStorage.getItem('kairoUserName') || null;
+            this.isNameRequested = false;
 
             this.loadConfig().then(() => {
                 this.initializeMessages();
@@ -173,7 +180,7 @@
                 this.botName = config.bot_name || 'Kairo IA';
                 this.primaryColor = config.primary_color || '#2563eb';
                 this.secondaryColor = config.secondary_color || '#0ea5e9';
-                this.welcomeMessage = config.welcome_message || 'Bem-vindo ao Kairo IA! Como posso ajudar?';
+                this.welcomeMessage = config.welcome_message || 'Bem-vindo ao Kairo IA! Estou aqui para responder às tuas perguntas com inteligência e estilo. Como te chamas?';
 
                 document.querySelector('.kairo-bot-info h2').textContent = this.botName;
                 this.avatarImage.src = this.avatarUrl;
@@ -192,6 +199,11 @@
             if (savedMessages) {
                 this.conversationHistory = JSON.parse(savedMessages);
                 this.conversationHistory.forEach(msg => this.displayMessage(msg.content, msg.role));
+            }
+            // Exibir mensagem inicial pedindo o nome se não houver nome salvo
+            if (!this.userName) {
+                this.displayMessage('Bem-vindo ao Kairo IA! Como te chamas?', 'assistant');
+                this.isNameRequested = true;
             }
         }
 
@@ -261,6 +273,18 @@
             this.showTypingIndicator();
 
             try {
+                // Se o nome não foi fornecido e foi solicitado, tratar como nome
+                if (this.isNameRequested && !this.userName) {
+                    this.userName = message.trim();
+                    localStorage.setItem('kairoUserName', this.userName);
+                    this.isNameRequested = false;
+                    this.displayMessage(`Obrigado, ${this.userName}! Em que te posso ajudar hoje?`, 'assistant');
+                    this.conversationHistory.push({ role: 'assistant', content: `Obrigado, ${this.userName}! Em que te posso ajudar hoje?` });
+                    this.saveMessages();
+                    this.hideTypingIndicator();
+                    return;
+                }
+
                 const response = await this.callKairoApi(message);
                 this.displayMessage(response, 'assistant');
                 this.conversationHistory.push({ role: 'assistant', content: response });
@@ -279,9 +303,10 @@
             const payload = {
                 message: message,
                 history: limitedHistory,
-                api_token: this.apiToken
+                api_token: this.apiToken,
+                user_name: this.userName
             };
-            console.log('Enviando para /api/kairo:', payload);
+            console.log('Enviando para /api/kairo:', JSON.stringify(payload, null, 2));
             try {
                 const response = await fetch(this.apiUrl, {
                     method: 'POST',
@@ -292,7 +317,7 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await response.json();
-                console.log('Resposta do servidor:', data);
+                console.log('Resposta do servidor:', JSON.stringify(data, null, 2));
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status} - ${data.message || 'Erro desconhecido'}`);
                 }
@@ -309,7 +334,6 @@
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'kairo-message-bubble';
 
-            // Adicionar avatar
             const avatar = document.createElement('img');
             avatar.className = 'kairo-message-avatar';
             avatar.src = sender === 'user' ? '/images/user-avatar.png' : this.avatarUrl;
@@ -319,13 +343,11 @@
             avatar.style.margin = sender === 'user' ? '0 0 0 10px' : '0 10px 0 0';
             messageDiv.appendChild(avatar);
 
-            // Adicionar indicador
             const indicator = document.createElement('span');
             indicator.className = 'kairo-message-indicator';
             indicator.textContent = sender === 'user' ? 'Você: ' : 'Kairo IA: ';
             bubbleDiv.appendChild(indicator);
 
-            // Adicionar mensagem
             const contentSpan = document.createElement('span');
             contentSpan.innerHTML = this.sanitizeHTML(message);
             bubbleDiv.appendChild(contentSpan);

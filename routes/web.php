@@ -7,6 +7,10 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\FaqController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +22,25 @@ use App\Http\Controllers\FaqController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::post('/scrape-tecnideia', function (Request $request) {
+    $apiToken = env('SCRAPE_API_TOKEN');
+    
+    // Verificação do token diretamente no header
+    if ($request->bearerToken() !== $apiToken) {
+        return response()->json(['error' => 'Não autorizado'], 401);
+    }
+
+    try {
+        Artisan::call('scrape:tecnideia');
+        $output = Artisan::output();
+        Log::info('Comando scrape:tecnideia executado via rota: ' . $output);
+        return response()->json(['message' => 'Scraping iniciado com sucesso!', 'output' => $output]);
+    } catch (\Exception $e) {
+        Log::error('Erro ao executar scrape:tecnideia via rota: ' . $e->getMessage());
+        return response()->json(['error' => 'Erro ao iniciar scraping: ' . $e->getMessage()], 500);
+    }
+});
 
 Route::get('/', function () {
     return view('welcome');

@@ -1,0 +1,136 @@
+{
+  "Tecnideia_FAQ": {
+    "Sobre_a_Empresa": [
+      {
+        "pergunta": "O que é a Tecnideia?",
+        "resposta": "A Tecnideia é uma empresa 100% angolana dedicada a oferecer soluções tecnológicas inovadoras, como desenvolvimento web, marketing digital, sistemas personalizados e consultoria em TI. O nosso objetivo é transformar as ideias dos nossos clientes em realidades digitais, com foco em qualidade, inovação e parcerias duradouras."
+      },
+      {
+        "pergunta": "Qual é a missão da Tecnideia?",
+        "resposta": "A nossa missão é desenvolver produtos e serviços de alta qualidade, promovendo inovação contínua e criando relacionamentos sólidos com clientes e parceiros, ajudando-os a alcançar o sucesso no mundo digital."
+      },
+      {
+        "pergunta": "A Tecnideia opera apenas em Angola?",
+        "resposta": "Como empresa angolana, temos um forte compromisso com o mercado local, mas as nossas soluções digitais, como websites, lojas virtuais e marketing digital, podem ser adaptadas para atender clientes em qualquer região. Entre em contacto connosco para discutir como podemos apoiar o seu negócio, onde quer que esteja!"
+      },
+      {
+        "pergunta": "Quais são os valores da Tecnideia?",
+        "resposta": "Valorizamos a inovação, a qualidade e a confiança. Estamos comprometidos em oferecer soluções excecionais, personalizadas e que superem as expectativas dos nossos clientes, mantendo sempre um foco na melhoria contínua."
+      }
+    ],
+    "Serviços_Oferecidos": [
+      {
+        "pergunta": "Quais são os serviços oferecidos pela Tecnideia?",
+        "resposta": "Oferecemos uma ampla gama de soluções tecnológicas, incluindo: Desenvolvimento de websites, portais e blogs; Criação de lojas virtuais; Desenvolvimento de aplicações web e sistemas personalizados; Branding e identidade visual; Marketing digital; Serviços de email profissionais; Otimização para motores de busca (SEO); Gestão de Google Meu Negócio; Consultoria em TI; Venda de domínios e hospedagem de sites; Auditoria informática."
+      },
+      {
+        "pergunta": "Como posso saber qual serviço é o mais adequado para o meu negócio?",
+        "resposta": "A nossa equipa está pronta para realizar uma consulta personalizada, onde analisamos os seus objetivos e necessidades. Contacte-nos através do nosso site ou por email, e juntos encontraremos a solução ideal para o seu negócio."
+      },
+      {
+        "pergunta": "A Tecnideia desenvolve websites responsivos?",
+        "resposta": "Sim! Todos os nossos websites são desenvolvidos com interfaces responsivas, otimizadas para funcionar perfeitamente em qualquer dispositivo, seja computador, tablet ou smartphone, garantindo uma experiência de utilizador fluida e profissional."
+      },
+      {
+        "pergunta": "O que inclui o serviço de branding?",
+        "resposta": "O nosso serviço de branding cria uma identidade visual única e memorável para a sua marca, incluindo design de logotipos, paletas de cores e outros elementos visuais que transmitem os valores da sua empresa e a destacam da concorrência."
+      },
+      {
+        "pergunta": "Como funciona o serviço de marketing digital da Tecnideia?",
+        "resposta": "Desenvolvemos estratégias de marketing digital personalizadas para alcançar o seu público-alvo, aumentar a visibilidade online e impulsionar as vendas. Isso inclui SEO, gestão de redes sociais, campanhas publicitárias e otimização no Google Meu Negócio."
+      },
+      {
+        "pergunta": "A Tecnideia oferece serviços de email profissionais?",
+        "resposta": "Sim, fornecemos serviços de email personalizados que garantem uma comunicação profissional e segura, com endereços associados ao seu domínio, reforçando a credibilidade da sua marca."
+      },
+      {
+        "pergunta": "O que é a consultoria em TI da Tecnideia?",
+        "resposta": "A nossa consultoria em TI ajuda a sua empresa a otimizar processos tecnológicos, reduzir custos e aumentar a eficiência. Analisamos as suas necessidades e propomos soluções personalizadas para melhorar o desempenho do seu negócio."
+      },
+      {
+        "pergunta": "A Tecnideia cria lojas virtuais?",
+        "resposta": "Sim, criamos lojas virtuais personalizadas, eficientes e adaptadas às suas necessidades, com funcionalidades como gestão de produtos, pagamentos seguros e design atrativo para maximizar as suas vendas online."
+      },
+      {
+        "pergunta": "O que significa SEO e como a Tecnideia pode ajudar?",
+        "resposta": "SEO (Otimização para Motores de Busca) é o processo de melhorar a visibilidade do seu site em motores de busca como o Google. A nossa equipa implementa estratégias de SEO para aumentar o tráfego orgânico e atrair mais clientes para o seu negócio."
+      },
+      {
+        "pergunta": "Como funciona o serviço de Google Meu Negócio?",
+        "resposta": "Ajudamos a configurar e otimizar o seu perfil no Google Meu Negócio para destacar a sua empresa em pesquisas locais, atrair mais clientes e aumentar a visibilidade do seu negócio no Google Maps e nos resultados de pesquisa."
+      }
+    ],
+    "Processo_e_Suporte": [
+      {
+        "pergunta": "Quanto tempo demora a implementação de um projeto?",
+        "resposta": "O tempo de implementação depende do tipo e da complexidade do projeto. Após uma consulta inicial, fornecemos um cronograma detalhado para garantir uma entrega eficiente e dentro das suas expectativas."
+      },
+      {
+        "pergunta": "A Tecnideia oferece suporte após a conclusão do projeto?",
+        "resposta": "Sim, oferecemos suporte contínuo após a implementação dos nossos serviços. A nossa equipa está sempre disponível para resolver problemas, responder a perguntas e garantir que tudo funciona perfeitamente."
+      },
+      {
+        "pergunta": "Posso personalizar os serviços da Tecnideia para as minhas necessidades?",
+        "resposta": "Absolutamente! Todos os nossos serviços são personalizáveis. Trabalhamos em estreita colaboração com os nossos clientes para criar soluções sob medida que atendam exatamente às suas necessidades e objetivos."
+      },
+      {
+        "pergunta": "Como posso começar a trabalhar com a Tecnideia?",
+        "resposta": "É simples! Entre em contacto connosco através do formulário no nosso site, por email ou telefone. Agendaremos uma consulta para discutir as suas ideias e como podemos transformá-las em realidade."
+      }
+    ],
+    "Programa_de_Afiliados": [
+      {
+        "pergunta": "O que é o programa de afiliados da Tecnideia?",
+        "resposta": "O nosso programa de afiliados permite que ganhe comissões ao promover os nossos serviços tecnológicos. Oferecemos até 30% de comissão por venda e renda recorrente em serviços contínuos, além de suporte completo com treinamento e materiais."
+      },
+      {
+        "pergunta": "Como posso tornar-me afiliado da Tecnideia?",
+        "resposta": "Para se tornar afiliado, inscreva-se no nosso programa através do site. A aprovação é rápida, não há mensalidades, e fornecemos todo o apoio necessário para começar."
+      },
+      {
+        "pergunta": "Quais são os benefícios de ser afiliado da Tecnideia?",
+        "resposta": "Como afiliado, pode ganhar comissões de até 30%, receber renda recorrente em serviços contínuos e contar com o nosso suporte, incluindo materiais de marketing e treinamento para maximizar os seus resultados."
+      }
+    ],
+    "Vantagens_e_Diferenciais": [
+      {
+        "pergunta": "Por que devo escolher a Tecnideia para o meu projeto digital?",
+        "resposta": "Escolher a Tecnideia significa optar por uma equipa dedicada, soluções personalizadas e resultados de alta qualidade. Destacamo-nos por criar identidades visuais únicas, websites profissionais, aplicações responsivas e estratégias digitais que impulsionam o seu negócio."
+      },
+      {
+        "pergunta": "Como a Tecnideia garante a qualidade dos seus serviços?",
+        "resposta": "Comprometemo-nos com a inovação e a excelência em todos os projetos. A nossa equipa especializada trabalha em estreita colaboração com os clientes, utilizando as melhores práticas e tecnologias modernas para entregar resultados que superam as expectativas."
+      },
+      {
+        "pergunta": "Os websites da Tecnideia são otimizados para SEO?",
+        "resposta": "Sim, todos os nossos websites são desenvolvidos com práticas de SEO integradas, incluindo conteúdo otimizado, estrutura técnica adequada e design responsivo, para garantir maior visibilidade nos motores de busca."
+      },
+      {
+        "pergunta": "Como a Tecnideia ajuda a minha empresa a destacar-se online?",
+        "resposta": "Criamos websites, lojas virtuais e estratégias de marketing digital que transmitem profissionalismo, atraem clientes e refletem os valores da sua marca. Além disso, oferecemos ferramentas como SEO e Google Meu Negócio para maximizar a sua presença online."
+      }
+    ],
+    "Contactos_e_Informações_Adicionais": [
+      {
+        "pergunta": "Como posso contactar a Tecnideia?",
+        "resposta": "Pode contactar-nos através do formulário no nosso site, por email ou telefone. Estamos prontos para responder às suas perguntas e começar o seu projeto!"
+      },
+      {
+        "pergunta": "A Tecnideia oferece serviços de hospedagem e domínios?",
+        "resposta": "Sim, oferecemos venda de domínios e serviços de hospedagem de sites, garantindo soluções seguras e confiáveis para manter o seu negócio online."
+      },
+      {
+        "pergunta": "A Tecnideia trabalha com empresas de todos os tamanhos?",
+        "resposta": "Sim, trabalhamos com empresas de todos os tamanhos, desde startups a grandes organizações, oferecendo soluções personalizadas que se adaptam às suas necessidades específicas."
+      },
+      {
+        "pergunta": "Posso ver exemplos de projetos realizados pela Tecnideia?",
+        "resposta": "Embora o nosso site não liste projetos específicos, podemos partilhar exemplos de trabalhos anteriores ou discutir como as nossas soluções podem ser aplicadas ao seu negócio. Contacte-nos para mais detalhes!"
+      },
+      {
+        "pergunta": "A Tecnideia oferece serviços de auditoria informática?",
+        "resposta": "Sim, oferecemos auditorias informáticas para avaliar a infraestrutura tecnológica da sua empresa, identificar melhorias e garantir maior segurança e eficiência."
+      }
+    ]
+  }
+}
